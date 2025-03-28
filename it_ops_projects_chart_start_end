@@ -1,124 +1,103 @@
 {
-  "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "description": "A simple bar chart with ranged data (aka Gantt Chart).",
-  "background": "white",
-  "padding": 5,
-  "width": 600,
-  "style": "cell",
-  "data": [
+  "width": 1000,
+  "height": {"step": 100},
+  "data": {
+    "name": "source_0",
+    "values": [
+      {"sort": 1, "category": "Y", "task": "Key Milestones", "start": "01-Oct-2024", "end": "01-Oct-24", "milestone": 0, "text": "FY25"},
+      {"sort": 1, "category": "Q", "task": "Key Milestones", "start": "01-Oct-2024", "end": "01-Oct-24", "milestone": 0, "text": "Q1"},
+      {"sort": 1, "category": "Q", "task": "Key Milestones", "start": "01-Jan-2025", "end": "01-Jan-25", "milestone": 0, "text": "Q2"},
+      {"sort": 1, "category": "Q", "task": "Key Milestones", "start": "01-Apr-2025", "end": "01-Apr-25", "milestone": 0, "text": "Q3"},
+      {"sort": 1, "category": "Q", "task": "Key Milestones", "start": "01-Jul-2025", "end": "01-Jul-25", "milestone": 0, "text": "Q4"},
+      {"sort": 2, "category": "P", "task": "A", "start": "01-Oct-2024", "end": "30-Sep-2025", "milestone": 0, "text": ""},
+      {"sort": 3, "category": "P", "task": "B", "start": "01-Nov-2024", "end": "2-Dec-2024", "milestone": 0, "text": ""},
+      {"sort": 4, "category": "P", "task": "C", "start": "01-Oct-2024", "end": "28-Dec-2024", "milestone": 0, "text": ""},
+      {"sort": 5, "category": "M", "task": "Key Milestones", "start": "24-Nov-2024", "end": "24-Nov-2024", "milestone": 1, "text": "Bedford  \nClosure"},
+      {"sort": 5, "category": "M", "task": "Key Milestones", "start": "12-Dec-2024", "end": "21-Dec-2024", "milestone": 1, "text": "DC On-net \nGlobal Comms"}
+    ]
+  },
+  "encoding": {
+    "y": {
+      "field": "task",
+      "sort": {"field": "sort"}
+      },
+    "x":
+      {
+        "title": "",
+        "field": "start",
+        "type": "temporal",
+        "timeunit": "yearmonth",
+        "axis":
+          {
+            "orient": "top",
+            "labelExpr": "timeFormat(datum.value, '%b')",
+            "labelPadding": 0,
+            "labelAlign": "left"
+          }
+      },
+    "x2":
+      {
+        "field": "end",
+        "type": "temporal",
+        "timeunit": "yearmonth"
+      }
+  },
+  "layer": [
     {
-      "name": "source_0",
-      "values": [
-        {"task": "A", "start": "01-Oct-2024", "end": "30-Sep-2025", "milestone": 0},
-        {"task": "B", "start": "01-Nov-2024", "end": "2-Dec-2024", "milestone": 0},
-        {"task": "C", "start": "01-Oct-2024", "end": "28-Dec-2024", "milestone": 0},
-        {"task": "A", "start": "12-Dec-2024", "end": "12-Dec-2024", "milestone": 1}
-      ]
-    },
-    {
-      "name": "data_0",
-      "source": "source_0",
       "transform": [
-        {"type": "formula", "expr": "toDate(datum[\"start\"])", "as": "start"},
-        {"type": "formula", "expr": "toDate(datum[\"end\"])", "as": "end"},
-        {
-          "type": "formula",
-          "expr": "split(utcFormat(datum.start,'%b %Y'), ' ')",
-          "as": "month_label"
-        },
-        {
-          "type": "formula",
-          "expr": "utcFormat(datum.start,'%B %d, %Y')",
-          "as": "converted as string"
-        },
-        {
-          "type": "filter",
-          "expr": "(isDate(datum[\"start\"]) || (isValid(datum[\"start\"]) && isFinite(+datum[\"start\"])))"
-        }
-      ]
-    }
-  ],
-  "signals": [
-    {"name": "y_step", "value": 20},
+        {"filter": {"field": "category", "equal": "Y"}}
+      ],
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "yOffset": -50
+      },
+      "encoding": {"text": {"field": "text"}}
+    },
     {
-      "name": "height",
-      "update": "bandspace(domain('y').length, 0.1, 0.05) * y_step"
-    }
-  ],
-
-  "marks": [
+      "transform": [
+        {"filter": {"field": "category", "equal": "Q"}}
+      ],
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "yOffset": -35
+      },
+      "encoding": {"text": {"field": "text"}}
+    },
     {
-      "name": "marks",
-      "type": "rect",
-      "style": ["bar"],
-      "from": {"data": "data_0"},
-      "encode": {
-        "update": {
-          "fill": {"value": "#4c78a8"},
-          "ariaRoleDescription": {"value": "bar"},
-          "description": {
-            "signal": "\"start: \" + (timeFormat(datum[\"start\"], '%b %d, %Y')) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; end: \" + (timeFormat(datum[\"end\"], '%b %d, %Y'))"
-          },
-          "x": {"scale": "x", "field": "start"},
-          "x2": {"scale": "x", "field": "end"},
-          "y": {"scale": "y", "field": "task"},
-          "height": {"signal": "max(0.25, bandwidth('y'))"}
-        }
+      "transform": [
+        {"filter": {"field": "category", "equal": "P"}}
+      ],
+      "mark": {
+        "type": "bar",
+        "color": "rgba(0, 255, 0, 0.4)"
       }
     },
     {
-      "name": "milestones",
-      "type": "symbol",
-      "encode": {
-        "enter": {
-          "fill": {"value": "#939597"},
-          "stroke": {"value": "#652c90"}
-        },
-        "update": {
-          "x": {"scale": "x", "field": "start"},
-          "x2": {"scale": "x", "field": "end"},
-          "y": {"scale": "y", "field": "task"}
-        },
-        "hover": {
-          "opacity": {"value": 0.5}
-        }
+      "transform": [
+        {"filter": {"field": "category", "equal": "M"}}
+      ],
+      "mark": {
+        "type": "point",
+        "shape": "triangle",
+        "fill": "#FFFFFF",
+        "stroke": "#FF0000",
+        "size": 100
       }
-    }
-  ],
-  "scales": [
-    {
-      "name": "x",
-      "type": "time",
-      "domain": {"data": "data_0", "fields": ["start", "end"]},
-      "range": [0, {"signal": "width"}]
     },
     {
-      "name": "y",
-      "type": "band",
-      "domain": {"data": "data_0", "field": "task", "sort": true},
-      "range": {"step": {"signal": "y_step"}},
-      "paddingInner": 0.1,
-      "paddingOuter": 0.05
-    }
-  ],
-  "axes": [
-    {
-      "scale": "x",
-      "orient": "top",
-      "grid": true,
-      "title": "start, end",
-      "labelFlush": false,
-      "labelOverlap": false,
-      "tickCount": {"signal": "ceil(width/40)"},
-      "format": "%b %Y",
-      "zindex": 0
-    },
-    {
-      "scale": "y",
-      "orient": "left",
-      "grid": false,
-      "title": "task",
-      "zindex": 0
+      "transform": [
+        {"filter": {"field": "category", "equal": "M"}}
+      ],
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "xOffset": 10,
+        "lineBreak": "\n"
+      },
+      "encoding": {"text": {"field": "text"}}
+      // "encoding": {"text": {"signal": "split(datum.value, ' ')"}}
     }
   ]
 }
