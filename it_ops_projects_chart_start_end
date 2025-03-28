@@ -1,19 +1,18 @@
 {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "width": 1000,
   "height": {"step": 100},
-  "data": {
-    "name": "source_0",
-    "values": [
-      {"sort": 1, "category": "Y", "task": "Key Milestones", "start": "01-Oct-2024", "end": "01-Oct-24", "milestone": 0, "text": "FY25"},
-      {"sort": 1, "category": "Q", "task": "Key Milestones", "start": "01-Oct-2024", "end": "01-Oct-24", "milestone": 0, "text": "Q1"},
-      {"sort": 1, "category": "Q", "task": "Key Milestones", "start": "01-Jan-2025", "end": "01-Jan-25", "milestone": 0, "text": "Q2"},
-      {"sort": 1, "category": "Q", "task": "Key Milestones", "start": "01-Apr-2025", "end": "01-Apr-25", "milestone": 0, "text": "Q3"},
-      {"sort": 1, "category": "Q", "task": "Key Milestones", "start": "01-Jul-2025", "end": "01-Jul-25", "milestone": 0, "text": "Q4"},
-      {"sort": 2, "category": "P", "task": "A", "start": "01-Oct-2024", "end": "30-Sep-2025", "milestone": 0, "text": ""},
-      {"sort": 3, "category": "P", "task": "B", "start": "01-Nov-2024", "end": "2-Dec-2024", "milestone": 0, "text": ""},
-      {"sort": 4, "category": "P", "task": "C", "start": "01-Oct-2024", "end": "28-Dec-2024", "milestone": 0, "text": ""},
-      {"sort": 5, "category": "M", "task": "Key Milestones", "start": "24-Nov-2024", "end": "24-Nov-2024", "milestone": 1, "text": "Bedford  \nClosure"},
-      {"sort": 5, "category": "M", "task": "Key Milestones", "start": "12-Dec-2024", "end": "21-Dec-2024", "milestone": 1, "text": "DC On-net \nGlobal Comms"}
+  "datasets": {
+    "project_data": [
+      {"sort": 1, "task": "Key Milestones", "start": "01-Oct-2024", "end": "01-Oct-2024"},
+      {"sort": 2, "task": "A", "start": "01-Oct-2024", "end": "30-Sep-2025"},
+      {"sort": 3, "task": "B", "start": "01-Nov-2024", "end": "2-Dec-2024"},
+      {"sort": 4, "task": "C", "start": "01-Oct-2024", "end": "28-Dec-2024"}
+    ],
+    "milestone_data": [
+      {"task": "Key Milestones", "start": "24-Nov-2024", "text": "Bedford\nClosure", "yOffSet": -25},
+      {"task": "Key Milestones", "start": "12-Dec-2024", "text": "DC On-net\nGlobal Comms", "yOffSet": 25},
+      {"task": "Key Milestones", "start": "20-Dec-2024", "text": "TCQ & TE\nComms update out\non GL live schedules", "yOffSet": -25}
     ]
   },
   "encoding": {
@@ -26,7 +25,6 @@
         "title": "",
         "field": "start",
         "type": "temporal",
-        "timeunit": "yearmonth",
         "axis":
           {
             "orient": "top",
@@ -39,65 +37,39 @@
       {
         "field": "end",
         "type": "temporal",
-        "timeunit": "yearmonth"
       }
   },
   "layer": [
     {
-      "transform": [
-        {"filter": {"field": "category", "equal": "Y"}}
-      ],
-      "mark": {
-        "type": "text",
-        "align": "left",
-        "yOffset": -50
-      },
-      "encoding": {"text": {"field": "text"}}
-    },
-    {
-      "transform": [
-        {"filter": {"field": "category", "equal": "Q"}}
-      ],
-      "mark": {
-        "type": "text",
-        "align": "left",
-        "yOffset": -35
-      },
-      "encoding": {"text": {"field": "text"}}
-    },
-    {
-      "transform": [
-        {"filter": {"field": "category", "equal": "P"}}
-      ],
+      "data": {"name": "project_data"},
       "mark": {
         "type": "bar",
+        //"size": 300,
+        "cornerRadiusEnd": 20,
         "color": "rgba(0, 255, 0, 0.4)"
       }
     },
     {
-      "transform": [
-        {"filter": {"field": "category", "equal": "M"}}
-      ],
+      "data": {"name": "milestone_data"},
       "mark": {
         "type": "point",
         "shape": "triangle",
         "fill": "#FFFFFF",
         "stroke": "#FF0000",
-        "size": 100
+        "size": 100,
+        "yOffset": {"field": "yOffSet"}
       }
     },
     {
-      "transform": [
-        {"filter": {"field": "category", "equal": "M"}}
-      ],
+      "data": {"name": "milestone_data"},
       "mark": {
         "type": "text",
         "align": "left",
-        "xOffset": 10,
-        "lineBreak": "\n"
+        "lineBreak": "\n",
+        "yOffset": {"field": "yOffSet"},
+        "xOffset": 10
       },
       "encoding": {"text": {"field": "text"}}
-      // "encoding": {"text": {"signal": "split(datum.value, ' ')"}}
     }
   ]
 }
