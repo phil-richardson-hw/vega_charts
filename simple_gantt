@@ -1,0 +1,137 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 600,
+  "data": {
+    "values": [
+      {
+        "Project": "Project1",
+        "Task": "Task1",
+        "Assignee": "Assignee1",
+        "start": "2023-05-01",
+        "end": "2023-06-01"
+      },
+      {
+        "Project": "Project1",
+        "Task": "Task1",
+        "Assignee": "Assignee2",
+        "start": "2023-04-01",
+        "end": "2023-05-01"
+      },
+      {
+        "Project": "Project1",
+        "Task": "Task2",
+        "Assignee": "Assignee3",
+        "start": "2023-07-01",
+        "end": "2023-07-14"
+      },
+      {
+        "Project": "Project2",
+        "Task": "Task1",
+        "Assignee": "Assignee1",
+        "start": "2023-07-01",
+        "end": "2023-08-01"
+      }
+    ]
+  },
+  "transform": [
+    {"calculate": "toDate(utcFormat(now(), '%Y-%m-%d'))", "as": "currentDate"},
+    {
+      "window": [{"op": "row_number", "as": "running_number"}],
+      "groupby": ["Assignee"],
+      "sort": [{"field": "start"}]
+    },
+    {
+      "calculate": "datum.Assignee + ' | ' + datum.Project + '/' + datum.Task + ' | Start:' + utcFormat(datum.start,'%B %d, %Y') + ' #' + datum.running_number",
+      "as": "project_full_descr"
+    }
+  ],
+  "title": {
+    "text": "Order Gantt by: Assignee > Project > Task",
+    "fontSize": 14,
+    "anchor": "start",
+    "dy": -15,
+    "color": "#706D6C"
+  },
+  "layer": [
+    {
+      "mark": {
+        "type": "bar",
+        "tooltip": true,
+        "cornerRadiusTopRight": 4,
+        "cornerRadiusBottomRight": 4
+      },
+      "encoding": {
+        "y": {
+          "field": "project_full_descr",
+          "type": "nominal",
+          "axis": {
+            "domain": true,
+            "grid": false,
+            "ticks": true,
+            "labels": true,
+            "labelLimit": 800,
+            "labelFontSize": 12,
+            "labelPadding": 10,
+            "labelExpr": "split(datum.label, '|')[1]"
+          },
+          "title": null
+        },
+        "x": {
+          "field": "start",
+          "type": "temporal",
+          "timeUnit": "yearmonthdate",
+          "axis": null,
+          "title": null
+        },
+        "x2": {"field": "end"},
+        "color": {
+          "title": null,
+          "field": "Assignee",
+          "type": "nominal",
+          "legend": null
+        }
+      }
+    },
+    {
+      "mark": {"type": "rule", "strokeDash": [2, 2], "strokeWidth": 2},
+      "encoding": {
+        "x": {
+          "field": "currentDate",
+          "type": "temporal",
+          "axis": {"format": "%d-%b"}
+        }
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "right",
+        "dx": -24,
+        "dy": 0,
+        "fontSize": 9
+      },
+      "encoding": {
+        "x": {"field": "start"},
+        "y": {"field": "project_full_descr", "type": "nominal"},
+        "text": {"field": "start", "type": "temporal", "format": "%d-%b"},
+        "color": {"value": "white"}
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "dx": 5,
+        "dy": 0,
+        "fontSize": 9
+      },
+      "encoding": {
+        "x": {"field": "end"},
+        "y": {"field": "project_full_descr", "type": "nominal"},
+        "text": {"field": "end", "type": "temporal", "format": "%d-%b"},
+        "color": {"value": "black"}
+      }
+    }
+  ],
+  "config": {"view": {"stroke": null}}
+}
