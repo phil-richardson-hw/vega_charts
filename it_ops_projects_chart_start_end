@@ -14,7 +14,18 @@
   },
   "data": [
     {
-      "name": "dataset"
+      "name": "dataset",
+      "url": "https://raw.githubusercontent.com/phil-richardson-hw/datasets/refs/heads/main/it_ops_programme.csv",
+      "format": {
+        "type": "csv",
+        "parse": {
+          "sort": "number",
+          "start": "date",
+          "end": "date",
+          "xOffset": "number",
+          "yOffset": "number"
+        }
+      }
     },
     {
       "name": "data_years",
@@ -66,228 +77,356 @@
     }
   ],
   "signals": [
-    {"name": "y_step", "value": 100},
-    {"name": "height", "update": "bandspace(domain('y').length, 0, 0) * y_step"}
+    {"name": "y_step", "value": 50},
+    {"name": "y_milestone_step", "value": 100}
+    //{"name": "height", "update": "bandspace(domain('y').length, 0, 0) * y_step"}
   ],
+  "layout": {"padding": 20, "columns": 1, "bounds": "full", "align": "each"},
   "marks": [
     {
-      "name": "layer_0_marks",
-      "type": "text",
-      "style": ["text"],
-      "from": {"data": "data_years"},
-      "encode": {
-        "update": {
-          "align": {"value": "left"},
-          "fill": {"value": "white"},
-          "font": {"value": "Georgia"},
-          "fontSize": {"value": 16},
-          "description": {
-            "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
-          },
-          "x": {"scale": "x", "field": "start"},
-          "y": {
-            "scale": "y",
-            "field": "task",
-            "offset": {"signal": "datum.yOffset"},
-            "band": 0.5
-          },
-          "text": {
-            "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
-          },
-          "baseline": {"value": "middle"}
-        }
-      }
-    },
-    {
-      "name": "layer_1_marks",
-      "type": "text",
-      "style": ["text"],
-      "from": {"data": "data_quarters"},
-      "encode": {
-        "update": {
-          "align": {"value": "left"},
-          "fill": {"value": "white"},
-          "font": {"value": "Georgia"},
-          "fontSize": {"value": 14},
-          "description": {
-            "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
-          },
-          "x": {"scale": "x", "field": "start"},
-          "y": {
-            "scale": "y",
-            "field": "task",
-            "offset": {"signal": "datum.yOffset"},
-            "band": 0.5
-          },
-          "text": {
-            "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
-          },
-          "baseline": {"value": "middle"}
-        }
-      }
-    },
-    {
-      "name": "layer_2_marks",
-      "type": "rect",
-      "style": ["bar"],
-      "from": {"data": "data_projects"},
-      "encode": {
-        "update": {
-          "fill": {"field": "color"},
-          "stroke": {"value": "white"},
-          "cornerRadius": {"value": 5},
-          "ariaRoleDescription": {"value": "bar"},
-          "description": {
-            "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; end: \" + (timeFormat(datum[\"end\"], \"%b %d, %Y\"))"
-          },
-          "x": {"scale": "x", "field": "start"},
-          "x2": {"scale": "x", "field": "end"},
-          "y": {"scale": "y", "field": "task"},
-          "height": {"signal": "max(0.25, bandwidth('y'))"}
-        }
-      }
-    },
-    {
-      "name": "layer_today",
-      "type": "rule",
-      "style": ["rule"],
-      "from": {"data": "data_today"},
-      "encode": {
-        "update": {
-          "stroke": {"value": "#D579EF"},
-          "strokeWidth": {"value": 1},
-          "description": {
-            "signal": "\"today: \" + (timeFormat(datum[\"today\"], \"%b %d, %Y\"))"
-          },
-          "x": {"scale": "x", "field": "today"},
-          "y": {"value": 0},
-          "y2": {"field": {"group": "height"}}
-        }
-      }
-    },
-    {
-      "name": "points_marks",
-      "type": "symbol",
-      "style": ["point"],
-      "from": {"data": "data_milestones"},
-      "encode": {
-        "update": {
-          "fill": {"field": "color"},
-          "stroke": {"value": "#FFFFFF"},
-          "strokeWidth":{"value": 1},
-          "size": {"value": 100},
-          "shape": {"value": "diamond"},
-          "ariaRoleDescription": {"value": "point"},
-          "description": {
-            "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"])"
-          },
-          "x": {"scale": "x", "field": "start"},
-          "y": {
-            "scale": "y",
-            "field": "task",
-            "offset": {"signal": "datum.yOffset"},
-            "band": 0.5
+      "type": "group",
+      "name": "milestones_group",
+      "style": "cell",
+      "marks": [
+        {
+          "name": "layer_0_marks",
+          "type": "text",
+          "style": ["text"],
+          "from": {"data": "data_years"},
+          "encode": {
+            "update": {
+              "align": {"value": "left"},
+              "fill": {"value": "white"},
+              "font": {"value": "Georgia"},
+              "fontSize": {"value": 16},
+              "description": {
+                "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
+              },
+              "x": {"scale": "x", "field": "start"},
+              "y": {
+                "scale": "y_milestone",
+                "field": "task",
+                "offset": {"signal": "datum.yOffset"},
+                "band": 0.5
+              },
+              "text": {
+                "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
+              },
+              "baseline": {"value": "middle"}
+            }
+          }
+        },
+        {
+          "name": "layer_1_marks",
+          "type": "text",
+          "style": ["text"],
+          "from": {"data": "data_quarters"},
+          "encode": {
+            "update": {
+              "align": {"value": "left"},
+              "fill": {"value": "white"},
+              "font": {"value": "Georgia"},
+              "fontSize": {"value": 14},
+              "description": {
+                "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
+              },
+              "x": {"scale": "x", "field": "start"},
+              "y": {
+                "scale": "y_milestone",
+                "field": "task",
+                "offset": {"signal": "datum.yOffset"},
+                "band": 0.5
+              },
+              "text": {
+                "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
+              },
+              "baseline": {"value": "middle"}
+            }
+          }
+        },
+        {
+          "name": "layer_today",
+          "type": "rule",
+          "style": ["rule"],
+          "from": {"data": "data_today"},
+          "encode": {
+            "update": {
+              "stroke": {"value": "#D579EF"},
+              "strokeWidth": {"value": 1},
+              "description": {
+                "signal": "\"today: \" + (timeFormat(datum[\"today\"], \"%b %d, %Y\"))"
+              },
+              "x": {"scale": "x", "field": "today"},
+              "y": {"value": 0},
+              "y2": {"field": {"group": "height"}}
+            }
+          }
+        },
+        {
+          "name": "points_marks",
+          "type": "symbol",
+          "style": ["point"],
+          "from": {"data": "data_milestones"},
+          "encode": {
+            "update": {
+              "fill": {"field": "color"},
+              "stroke": {"value": "#FFFFFF"},
+              "strokeWidth":{"value": 1},
+              "size": {"value": 100},
+              "shape": {"value": "diamond"},
+              "ariaRoleDescription": {"value": "point"},
+              "description": {
+                "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"])"
+              },
+              "x": {"scale": "x", "field": "start"},
+              "y": {
+                "scale": "y_milestone",
+                "field": "task",
+                "offset": {"signal": "datum.yOffset"},
+                "band": 0.5
+              }
+            }
+          }
+        },
+        {
+          "name": "text_milestones_marks",
+          "type": "text",
+          "style": ["text"],
+          "from": {"data": "data_milestones"},
+          "encode": {
+            "update": {
+              "align": {"signal": "datum.textAlign"},
+              "lineBreak": {"value": "\\n"},
+              "fill": {"value": "white"},
+              "fontSize":{"value": 12},
+              "description": {
+                "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
+              },
+              "x": {
+                "scale": "x",
+                "field": "start",
+                "offset": {"signal": "datum.xOffset"}
+              },
+              "y": {
+                "scale": "y_milestone",
+                "field": "task",
+                "offset": {"signal": "datum.yOffset"},
+                "band": 0.5
+              },
+              "text": {
+                "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
+              },
+              "baseline": {"value": "middle"}
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "from": {"data": "text_milestones_marks"},
+          "encode": {
+            "update": {
+              "x": {"field": "bounds.x1", "offset": -2},
+              "x2": {"field": "bounds.x2", "offset": 2},
+              "y": {"field": "bounds.y1", "offset": -2},
+              "y2": {"field": "bounds.y2", "offset": 2},
+              "fill": {"value": "grey"},
+              "opacity": {"value": 0.4},
+              "cornerRadius": {"value": 2},
+              "strokeWidth": {"value": 1},
+              "stroke": {"value": "white"}        }
+          }
+        },
+        {
+          "name": "layer_today_milestones",
+          "type": "rule",
+          "style": ["rule"],
+          "from": {"data": "data_today"},
+          "encode": {
+            "update": {
+              "stroke": {"value": "#D579EF"},
+              "strokeWidth": {"value": 1},
+              "description": {
+                "signal": "\"today: \" + (timeFormat(datum[\"today\"], \"%b %d, %Y\"))"
+              },
+              "x": {"scale": "x", "field": "today"},
+              "y": {"value": 0},
+              "y2": {"field": {"group": "height"}}
+            }
           }
         }
-      }
+      ],
+      "axes": [
+        {
+          "scale": "x",
+          "orient": "top",
+          "tickCount": "month",
+          "gridScale": "y_milestone",
+          "grid": true,
+          "gridDash": {"value": [5, 5]},
+          "domain": false,
+          "labels": false,
+          "format": "%b",
+          "labelAlign": "left",
+          "aria": false,
+          "maxExtent": 0,
+          "minExtent": 0,
+          "ticks": false,
+          "zindex": 0
+        },
+        {
+          "scale": "x",
+          "orient": "top",
+          "grid": false,
+          "format": "%b",
+          "labelAlign": "left",
+          "labelPadding": 0,
+          "labelColor": "white",
+          "labelFont": "Georgia",
+          "labelFontSize": 14,
+          "tickCount": "month",
+          "labelFlush": true,
+          "labelOverlap": true,
+          "zindex": 0
+        },
+        {
+          "scale": "y_milestone",
+          "orient": "left",
+          "labelColor": "white",
+          "labelFont": "Georgia",
+          "labelFontSize": 14,
+          "zindex": 0}
+      ]
     },
     {
-      "name": "text_milestones_marks",
-      "type": "text",
-      "style": ["text"],
-      "from": {"data": "data_milestones"},
-      "encode": {
-        "update": {
-          "align": {"signal": "datum.textAlign"},
-          "lineBreak": {"value": "\\n"},
-          "fill": {"value": "white"},
-          "fontSize":{"value": 12},
-          "description": {
-            "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
-          },
-          "x": {
-            "scale": "x",
-            "field": "start",
-            "offset": {"signal": "datum.xOffset"}
-          },
-          "y": {
-            "scale": "y",
-            "field": "task",
-            "offset": {"signal": "datum.yOffset"},
-            "band": 0.5
-          },
-          "text": {
-            "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
-          },
-          "baseline": {"value": "middle"}
+      "type": "group",
+      "name": "projects_group",
+      "style": "cell",
+      "marks": [
+        {
+          "name": "layer_2_marks",
+          "type": "rect",
+          "style": ["bar"],
+          "from": {"data": "data_projects"},
+          "encode": {
+            "update": {
+              "fill": {"field": "color"},
+              "stroke": {"value": "white"},
+              "cornerRadius": {"value": 5},
+              "ariaRoleDescription": {"value": "bar"},
+              "description": {
+                "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; end: \" + (timeFormat(datum[\"end\"], \"%b %d, %Y\"))"
+              },
+              "x": {"scale": "x", "field": "start"},
+              "x2": {"scale": "x", "field": "end"},
+              "y": {"scale": "y", "field": "task"},
+              "height": {"signal": "max(0.25, bandwidth('y'))"}
+            }
+          }
+        },
+        // {
+        //   "name": "layer_today",
+        //   "type": "rule",
+        //   "style": ["rule"],
+        //   "from": {"data": "data_today"},
+        //   "encode": {
+        //     "update": {
+        //       "stroke": {"value": "#D579EF"},
+        //       "strokeWidth": {"value": 1},
+        //       "description": {
+        //         "signal": "\"today: \" + (timeFormat(datum[\"today\"], \"%b %d, %Y\"))"
+        //       },
+        //       "x": {"scale": "x", "field": "today"},
+        //       "y": {"value": 0},
+        //       "y2": {"field": {"group": "height"}}
+        //     }
+        //   }
+        // },
+        {
+          "name": "text_labels_marks",
+          "type": "text",
+          "style": ["text"],
+          "from": {"data": "data_labels"},
+          "encode": {
+            "update": {
+              "align": {"signal": "datum.textAlign"},
+              "lineBreak": {"value": "\\n"},
+              "fill": {"value": "white"},
+              "fontSize":{"value": 12},
+              "description": {
+                "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
+              },
+              "x": {
+                "scale": "x",
+                "field": "start",
+                "offset": {"signal": "datum.xOffset"}
+              },
+              "y": {
+                "scale": "y",
+                "field": "task",
+                "offset": {"signal": "datum.yOffset"},
+                "band": 0.5
+              },
+              "text": {
+                "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
+              },
+              "baseline": {"value": "middle"}
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "from": {"data": "text_labels_marks"},
+          "encode": {
+            "update": {
+              "x": {"field": "bounds.x1", "offset": -2},
+              "x2": {"field": "bounds.x2", "offset": 2},
+              "y": {"field": "bounds.y1", "offset": -2},
+              "y2": {"field": "bounds.y2", "offset": 2},
+              "fill": {"value": "grey"},
+              "opacity": {"value": 0.4},
+              "cornerRadius": {"value": 2},
+              "strokeWidth": {"value": 1},
+              "stroke": {"value": "white"}        }
+          }
         }
-      }
-    },
-    {
-      "type": "rect",
-      "from": {"data": "text_milestones_marks"},
-      "encode": {
-        "update": {
-          "x": {"field": "bounds.x1", "offset": -2},
-          "x2": {"field": "bounds.x2", "offset": 2},
-          "y": {"field": "bounds.y1", "offset": -2},
-          "y2": {"field": "bounds.y2", "offset": 2},
-          "fill": {"value": "grey"},
-          "opacity": {"value": 0.4},
-          "cornerRadius": {"value": 2},
-          "strokeWidth": {"value": 1},
-          "stroke": {"value": "white"}        }
-      }
-    },
-    {
-      "name": "text_labels_marks",
-      "type": "text",
-      "style": ["text"],
-      "from": {"data": "data_labels"},
-      "encode": {
-        "update": {
-          "align": {"signal": "datum.textAlign"},
-          "lineBreak": {"value": "\\n"},
-          "fill": {"value": "white"},
-          "fontSize":{"value": 12},
-          "description": {
-            "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
-          },
-          "x": {
-            "scale": "x",
-            "field": "start",
-            "offset": {"signal": "datum.xOffset"}
-          },
-          "y": {
-            "scale": "y",
-            "field": "task",
-            "offset": {"signal": "datum.yOffset"},
-            "band": 0.5
-          },
-          "text": {
-            "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
-          },
-          "baseline": {"value": "middle"}
-        }
-      }
-    },
-    {
-      "type": "rect",
-      "from": {"data": "text_labels_marks"},
-      "encode": {
-        "update": {
-          "x": {"field": "bounds.x1", "offset": -2},
-          "x2": {"field": "bounds.x2", "offset": 2},
-          "y": {"field": "bounds.y1", "offset": -2},
-          "y2": {"field": "bounds.y2", "offset": 2},
-          "fill": {"value": "grey"},
-          "opacity": {"value": 0.4},
-          "cornerRadius": {"value": 2},
-          "strokeWidth": {"value": 1},
-          "stroke": {"value": "white"}        }
-      }
+      ],
+      "axes": [
+        {
+          "scale": "x",
+          "orient": "top",
+          "tickCount": "month",
+          "gridScale": "y",
+          "grid": true,
+          "gridDash": {"value": [5, 5]},
+          "domain": false,
+          "labels": false,
+          "format": "%b",
+          "labelAlign": "left",
+          "aria": false,
+          "maxExtent": 0,
+          "minExtent": 0,
+          "ticks": false,
+          "zindex": 0
+        },
+        {
+          "scale": "x",
+          "orient": "top",
+          "grid": false,
+          "format": "%b",
+          "labels": false,
+          "zindex": 0
+        },
+        {
+          "scale": "y",
+          "orient": "left",
+          "labelColor": "white",
+          "labelFont": "Georgia",
+          "labelFontSize": 14,
+          "zindex": 0}
+      ]
     }
-  ],
+  ]
+  ,
   "legends": [
     {
       "type": "symbol",
@@ -323,11 +462,24 @@
       "type": "band",
       "domain": {
         "fields": [
-          {"data": "dataset", "field": "task"}
+          {"data": "data_projects", "field": "task"}
         ],
         "sort": {"op": "min", "field": "sort"}
       },
       "range": {"step": {"signal": "y_step"}},
+      "paddingInner": 0.03,
+      "paddingOuter": 0
+    },
+    {
+      "name": "y_milestone",
+      "type": "band",
+      "domain": {
+        "fields": [
+          {"data": "data_years", "field": "task"}
+        ],
+        "sort": {"op": "min", "field": "sort"}
+      },
+      "range": {"step": {"signal": "y_milestone_step"}},
       "paddingInner": 0.03,
       "paddingOuter": 0
     },
@@ -359,46 +511,5 @@
         ]
       }
     }
-  ],
-  "axes": [
-    {
-      "scale": "x",
-      "orient": "top",
-      "tickCount": "month",
-      "gridScale": "y",
-      "grid": true,
-      "gridDash": {"value": [5, 5]},
-      "domain": false,
-      "labels": false,
-      "format": "%b",
-      "labelAlign": "left",
-      "aria": false,
-      "maxExtent": 0,
-      "minExtent": 0,
-      "ticks": false,
-      "zindex": 0
-    },
-    {
-      "scale": "x",
-      "orient": "top",
-      "grid": false,
-      "format": "%b",
-      "labelAlign": "left",
-      "labelPadding": 0,
-      "labelColor": "white",
-      "labelFont": "Georgia",
-      "labelFontSize": 14,
-      "tickCount": "month",
-      "labelFlush": true,
-      "labelOverlap": true,
-      "zindex": 0
-    },
-    {
-      "scale": "y",
-      "orient": "left",
-      "labelColor": "white",
-      "labelFont": "Georgia",
-      "labelFontSize": 14,
-      "zindex": 0}
   ]
 }
