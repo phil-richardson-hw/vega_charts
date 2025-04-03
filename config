@@ -1,0 +1,13 @@
+{
+  "font": "Segoe UI",
+  "legend": {
+      "symbolOpacity": 1,
+      "orient": "bottom",
+      "direction": "horizontal",
+      "strokeColor": "white",
+      "padding":{"value": 10},
+      "titleFont": "Georgia",
+      "titleFontSize": 14,
+      "titleColor": "white"
+    }
+}
