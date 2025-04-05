@@ -1,31 +1,19 @@
 {
-  "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "background": "#173F35",
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "background": "#215F9A",
   "padding": 5,
-  "width": 1150,
-  "style": "cell",
+  "width": 1000,
+  "height": 510,
   "title": {
     "text": "Infrastructure - Programme Plan FY25",
     "anchor":"start",
-    "color": "white",
     "font": "Georgia",
     "fontSize": 20,
     "offset": 20
   },
   "data": [
     {
-      "name": "dataset",
-      "url": "https://raw.githubusercontent.com/phil-richardson-hw/datasets/refs/heads/main/it_ops_programme.csv",
-      "format": {
-        "type": "csv",
-        "parse": {
-          "sort": "number",
-          "start": "date",
-          "end": "date",
-          "xOffset": "number",
-          "yOffset": "number"
-        }
-      }
+      "name": "dataset"
     },
     {
       "name": "data_years",
@@ -43,9 +31,27 @@
       "transform": [{"type": "filter", "expr": "datum[\"category\"]===\"P\""}]
     },
     {
+      "name": "data_key_milestones",
+      "source": "dataset",
+      "transform": [{"type": "filter", "expr": "datum[\"category\"]===\"KM\""}]
+    },
+    {
       "name": "data_milestones",
       "source": "dataset",
-      "transform": [{"type": "filter", "expr": "datum[\"category\"]===\"M\""}]
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "datum[\"category\"]===\"M\""
+        },
+        {
+          "type": "lookup",
+          "from": "dataset",
+          "key": "task",
+          "fields": ["task"],
+          "values": ["status"],
+          "as": ["project_status"]
+        }
+      ]
     },
     {
       "name": "data_labels",
@@ -58,40 +64,68 @@
       "transform": [{"type": "formula", "expr": "now()", "as": "today"}]
     },
     {
+      "name": "data_workstreams",
+      "source": "dataset",
+      "transform": [
+        {
+          "type": "joinaggregate",
+          "groupby": ["work_stream"],
+          "ops": ["count", "min"],
+          "fields": ["work_stream","sort"],
+          "as": ["count","min_sort"]
+        },
+        {"type": "filter", "expr": "datum[\"work_stream\"]!=null&&datum[\"min_sort\"]==datum[\"sort\"]"}
+      ]
+    },
+    {
       "name": "data_milestone_legend",
       "values": [
-        {"label": "Planned", "color": "#9D9D9D"},
-        {"label": "Completed", "color": "#0857C3"},
-        {"label": "Delayed", "color": "#FAAA00"},
-        {"label": "At Risk", "color": "#DC000F"}
+        {"label": "Planned", "color": "#A6A6A6", "stroke": "#000000"},
+        {"label": "Completed", "color": "#00B0F0", "stroke": "#000000"},
+        {"label": "Delayed", "color": "#FFC000", "stroke": "#FF0000"},
+        {"label": "At Risk", "color": "#FFFF00", "stroke": "#FF0000"}
       ]
     },
     {
       "name": "data_projects_legend",
       "values": [
-        {"label": "On Plan", "color": "rgba(59, 204, 194, 0.4)"},
-        {"label": "On Hold", "color": "rgba(224, 236, 137, 0.4)"},
-        {"label": "Amber", "color": "rgba(250, 170, 0, 0.4)"},
-        {"label": "Completed", "color": "rgba(8, 87, 195, 0.4)"}
+        {"label": "On Plan", "color": "#92D050", "font_color": "#000000"},
+        {"label": "On Hold", "color": "#FFFF00", "font_color": "#000000"},
+        {"label": "Amber", "color": "#FFC000", "font_color": "#000000"},
+        {"label": "Red", "color": "#FF0000", "font_color": "#FFFFFF"},
+        {"label": "Completed", "color": "#A6CAEC", "font_color": "#000000"}
       ]
     }
   ],
   "signals": [
-    {"name": "y_step", "value": 50},
-    {"name": "y_milestone_step", "value": 100}
-    //{"name": "height", "update": "bandspace(domain('y').length, 0, 0) * y_step"}
+    {"name": "y_step", "value": 32},
+    {"name": "y_key_milestones_step", "value": 80},
+    {"name": "height_milestones", "update": "bandspace(domain('y_key_milestones').length, 0, 0) * y_key_milestones_step"},
+    {"name": "height_projects", "update": "bandspace(domain('y').length, 0, 0) * y_step"},
+    {
+      "name": "width_charts",
+      "update": "domain('x').length"
+    }
   ],
-  "layout": {"padding": 20, "columns": 1, "bounds": "full", "align": "each"},
+  "layout": {"padding": 0, "columns": 1, "bounds": "full", "align": "each"},
   "marks": [
     {
       "type": "group",
-      "name": "milestones_group",
-      "style": "cell",
+      "name": "key_milestones_group",
+      "encode": {
+        "update": {
+          "fill":{"value": "#D1D1D1"},
+          "opacity": {"value": 1},
+          "width": {"signal": "width"},
+          "height": {"signal": "height_milestones"}
+        }
+      },
+      ////"style": "cell",
       "marks": [
         {
           "name": "layer_0_marks",
           "type": "text",
-          "style": ["text"],
+          // //"style": ["text"],
           "from": {"data": "data_years"},
           "encode": {
             "update": {
@@ -104,7 +138,7 @@
               },
               "x": {"scale": "x", "field": "start"},
               "y": {
-                "scale": "y_milestone",
+                "scale": "y_key_milestones",
                 "field": "task",
                 "offset": {"signal": "datum.yOffset"},
                 "band": 0.5
@@ -112,14 +146,14 @@
               "text": {
                 "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
               },
-              "baseline": {"value": "middle"}
+              "baseline": {"value": "top"}
             }
           }
         },
         {
           "name": "layer_1_marks",
           "type": "text",
-          "style": ["text"],
+          // //"style": ["text"],
           "from": {"data": "data_quarters"},
           "encode": {
             "update": {
@@ -132,7 +166,7 @@
               },
               "x": {"scale": "x", "field": "start"},
               "y": {
-                "scale": "y_milestone",
+                "scale": "y_key_milestones",
                 "field": "task",
                 "offset": {"signal": "datum.yOffset"},
                 "band": 0.5
@@ -140,37 +174,37 @@
               "text": {
                 "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
               },
-              "baseline": {"value": "middle"}
+              "baseline": {"value": "top"}
             }
           }
         },
         {
           "name": "layer_today",
           "type": "rule",
-          "style": ["rule"],
+          ////"style": ["rule"],
           "from": {"data": "data_today"},
           "encode": {
             "update": {
               "stroke": {"value": "#D579EF"},
-              "strokeWidth": {"value": 1},
+              "strokeWidth": {"value": 0.5},
               "description": {
                 "signal": "\"today: \" + (timeFormat(datum[\"today\"], \"%b %d, %Y\"))"
               },
               "x": {"scale": "x", "field": "today"},
               "y": {"value": 0},
-              "y2": {"field": {"group": "height"}}
+              "y2": {"signal": "bandspace(domain('y_key_milestones').length, 0, 0) * y_key_milestones_step"}
             }
           }
         },
         {
           "name": "points_marks",
           "type": "symbol",
-          "style": ["point"],
-          "from": {"data": "data_milestones"},
+          ////"style": ["point"],
+          "from": {"data": "data_key_milestones"},
           "encode": {
             "update": {
               "fill": {"field": "color"},
-              "stroke": {"value": "#FFFFFF"},
+              "stroke": {"value": "#000000"},
               "strokeWidth":{"value": 1},
               "size": {"value": 100},
               "shape": {"value": "diamond"},
@@ -180,7 +214,7 @@
               },
               "x": {"scale": "x", "field": "start"},
               "y": {
-                "scale": "y_milestone",
+                "scale": "y_key_milestones",
                 "field": "task",
                 "offset": {"signal": "datum.yOffset"},
                 "band": 0.5
@@ -189,16 +223,17 @@
           }
         },
         {
-          "name": "text_milestones_marks",
+          "name": "text_key_milestones_marks",
           "type": "text",
-          "style": ["text"],
-          "from": {"data": "data_milestones"},
+          "zindex": 1,
+          ////"style": ["text"],
+          "from": {"data": "data_key_milestones"},
           "encode": {
             "update": {
               "align": {"signal": "datum.textAlign"},
               "lineBreak": {"value": "\\n"},
-              "fill": {"value": "white"},
-              "fontSize":{"value": 12},
+              "fill": {"value": "black"},
+              "fontSize":{"value": 10},
               "description": {
                 "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
               },
@@ -208,9 +243,9 @@
                 "offset": {"signal": "datum.xOffset"}
               },
               "y": {
-                "scale": "y_milestone",
+                "scale": "y_key_milestones",
                 "field": "task",
-                "offset": {"signal": "datum.yOffset"},
+                "offset": {"signal": "datum.label_yOffset"},
                 "band": 0.5
               },
               "text": {
@@ -222,35 +257,18 @@
         },
         {
           "type": "rect",
-          "from": {"data": "text_milestones_marks"},
+          "from": {"data": "text_key_milestones_marks"},
           "encode": {
             "update": {
               "x": {"field": "bounds.x1", "offset": -2},
               "x2": {"field": "bounds.x2", "offset": 2},
               "y": {"field": "bounds.y1", "offset": -2},
               "y2": {"field": "bounds.y2", "offset": 2},
-              "fill": {"value": "grey"},
+              "fill": {"value": "#E8E8E8"},
               "opacity": {"value": 0.4},
               "cornerRadius": {"value": 2},
               "strokeWidth": {"value": 1},
-              "stroke": {"value": "white"}        }
-          }
-        },
-        {
-          "name": "layer_today_milestones",
-          "type": "rule",
-          "style": ["rule"],
-          "from": {"data": "data_today"},
-          "encode": {
-            "update": {
-              "stroke": {"value": "#D579EF"},
-              "strokeWidth": {"value": 1},
-              "description": {
-                "signal": "\"today: \" + (timeFormat(datum[\"today\"], \"%b %d, %Y\"))"
-              },
-              "x": {"scale": "x", "field": "today"},
-              "y": {"value": 0},
-              "y2": {"field": {"group": "height"}}
+              "stroke": {"value": "black"}        
             }
           }
         }
@@ -260,7 +278,7 @@
           "scale": "x",
           "orient": "top",
           "tickCount": "month",
-          "gridScale": "y_milestone",
+          "gridScale": "y_key_milestones",
           "grid": true,
           "gridDash": {"value": [5, 5]},
           "domain": false,
@@ -280,7 +298,6 @@
           "format": "%b",
           "labelAlign": "left",
           "labelPadding": 0,
-          "labelColor": "white",
           "labelFont": "Georgia",
           "labelFontSize": 14,
           "tickCount": "month",
@@ -289,28 +306,35 @@
           "zindex": 0
         },
         {
-          "scale": "y_milestone",
+          "scale": "y_key_milestones",
           "orient": "left",
-          "labelColor": "white",
           "labelFont": "Georgia",
           "labelFontSize": 14,
+          "labelOffset": -10,
           "zindex": 0}
       ]
     },
     {
       "type": "group",
       "name": "projects_group",
-      "style": "cell",
+      "encode": {
+        "update": {
+          "fill":{"value": "#D1D1D1"},
+          "opacity": {"value": 1},
+          "width": {"signal": "width"},
+          "height": {"signal": "height_projects"}
+        }
+      },
       "marks": [
         {
           "name": "layer_2_marks",
           "type": "rect",
-          "style": ["bar"],
+          ////"style": ["bar"],
           "from": {"data": "data_projects"},
           "encode": {
             "update": {
               "fill": {"field": "color"},
-              "stroke": {"value": "white"},
+              "stroke": {"value": "black"},
               "cornerRadius": {"value": 5},
               "ariaRoleDescription": {"value": "bar"},
               "description": {
@@ -323,35 +347,114 @@
             }
           }
         },
-        // {
-        //   "name": "layer_today",
-        //   "type": "rule",
-        //   "style": ["rule"],
-        //   "from": {"data": "data_today"},
-        //   "encode": {
-        //     "update": {
-        //       "stroke": {"value": "#D579EF"},
-        //       "strokeWidth": {"value": 1},
-        //       "description": {
-        //         "signal": "\"today: \" + (timeFormat(datum[\"today\"], \"%b %d, %Y\"))"
-        //       },
-        //       "x": {"scale": "x", "field": "today"},
-        //       "y": {"value": 0},
-        //       "y2": {"field": {"group": "height"}}
-        //     }
-        //   }
-        // },
+        {
+          "name": "layer_today",
+          "type": "rule",
+          //"style": ["rule"],
+          "from": {"data": "data_today"},
+          "encode": {
+            "update": {
+              "stroke": {"value": "#D579EF"},
+              "strokeWidth": {"value": 0.5},
+              "description": {
+                "signal": "\"today: \" + (timeFormat(datum[\"today\"], \"%b %d, %Y\"))"
+              },
+              "x": {"scale": "x", "field": "today"},
+              "y": {"value": 0},
+              "y2": {"signal": "bandspace(domain('y').length, 0, 0) * y_step"}
+            }
+          }
+        },
+        {
+          "name": "points_marks",
+          "type": "symbol",
+          //"style": ["point"],
+          "from": {"data": "data_milestones"},
+          "encode": {
+            "update": {
+              "fill": {"field": "color"},
+              "stroke": {"value": "#000000"},
+              "strokeWidth":{"value": 1},
+              "size": {"value": 100},
+              "shape": {"value": "diamond"},
+              "ariaRoleDescription": {"value": "point"},
+              "description": {
+                "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"])"
+              },
+              "x": {"scale": "x", "field": "start"},
+              "y": {
+                "scale": "y",
+                "field": "task",
+                "offset": {"signal": "datum.yOffset"},
+                "band": 0.5
+              }
+            }
+          }
+        },
+        {
+          "name": "text_milestones_marks",
+          "type": "text",
+          //"style": ["text"],
+          "from": {"data": "data_milestones"},
+          "encode": {
+            "update": {
+              "align": {"signal": "datum.textAlign"},
+              "lineBreak": {"value": "\\n"},
+              "fill": {
+                "signal": "datum.project_status === \"[Project] Red\" ? \"white\" : \"black\""
+              },
+              "fontSize":{"value": 8.5},
+              "description": {
+                "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
+              },
+              "x": {
+                "scale": "x",
+                "field": "start",
+                "offset": {"signal": "datum.xOffset"}
+              },
+              "y": {
+                "scale": "y",
+                "field": "task",
+                "offset": {"signal": "datum.label_yOffset"},
+                "band": 0.5
+              },
+              "text": {
+                "signal": "isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"]"
+              },
+              "baseline": {"value": "middle"}
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "from": {"data": "text_milestones_marks"},
+          "encode": {
+            "update": {
+              "x": {"field": "bounds.x1", "offset": -2},
+              "x2": {"field": "bounds.x2", "offset": 2},
+              "y": {"field": "bounds.y1", "offset": -2},
+              "y2": {"field": "bounds.y2", "offset": 2},
+              "fill": {"value": "grey"},
+              "opacity": {"value": 0},
+              "cornerRadius": {"value": 2},
+              "strokeWidth": {"value": 1},
+              "stroke": {"value": "black"}
+              }
+          }
+        },
         {
           "name": "text_labels_marks",
           "type": "text",
-          "style": ["text"],
+          "zindex": 1,
+          //"style": ["text"],
           "from": {"data": "data_labels"},
           "encode": {
             "update": {
               "align": {"signal": "datum.textAlign"},
               "lineBreak": {"value": "\\n"},
               "fill": {"value": "white"},
-              "fontSize":{"value": 12},
+              "fontSize":{"value": 10},
+              "angle": {"field": "textRotate"},
               "description": {
                 "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
               },
@@ -376,6 +479,7 @@
         {
           "type": "rect",
           "from": {"data": "text_labels_marks"},
+          "zindex": 0,
           "encode": {
             "update": {
               "x": {"field": "bounds.x1", "offset": -2},
@@ -383,10 +487,79 @@
               "y": {"field": "bounds.y1", "offset": -2},
               "y2": {"field": "bounds.y2", "offset": 2},
               "fill": {"value": "grey"},
-              "opacity": {"value": 0.4},
+              "opacity": {"value": 1},
               "cornerRadius": {"value": 2},
               "strokeWidth": {"value": 1},
-              "stroke": {"value": "white"}        }
+              "stroke": {"value": "black"}
+            }
+          }
+        },
+        {
+          "name": "text_workstream_marks",
+          "type": "text",
+          "zindex": 1,
+          //"style": ["text"],
+          "from": {"data": "data_workstreams"},
+          "encode": {
+            "update": {
+              "align": {"value": "center"},
+              "lineBreak": {"value": "\\n"},
+              "fill": {"value": "white"},
+              "font": {"value": "Georgia"},
+              "fontSize":{"value": 14},
+              "angle": {"value": -90},
+              "dy": {"field": "work_stream_yOffset"},
+              "dx": {"signal": "-(((datum.count-1)*y_step)/2)"},
+              "description": {
+                "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
+              },
+              "x": {
+                "scale": "x",
+                "field": "start"
+              },
+              "y": {
+                "scale": "y",
+                "field": "task",
+                "band": 0.5
+              },
+              "text": {
+                "signal": "isValid(datum[\"work_stream\"]) ? datum[\"work_stream\"] : \"\"+datum[\"work_stream\"]"
+              },
+              "baseline": {"value": "middle"}
+            }
+          }
+        },
+        // {
+        //   "name": "rect_workstream_marks",
+        //   "type": "rect",
+        //   "from": {"data": "text_workstream_marks"},
+        //   "zindex": 0,
+        //   "encode": {
+        //     "update": {
+        //       "x": {"field": "bounds.x1", "offset": -2},
+        //       "x2": {"field": "bounds.x2", "offset": 2},
+        //       "y": {"field": "bounds.y1", "offset": -2},
+        //       "y2": {"field": "bounds.y2", "offset": 2},
+        //       "fill": {"value": "grey"},
+        //       "opacity": {"value": 1},
+        //       "cornerRadius": {"value": 2},
+        //       "strokeWidth": {"value": 1},
+        //       "stroke": {"value": "black"}
+        //     }
+        //   }
+        // }
+        {
+          "name": "rule_workstream_marks",
+          "type": "rule",
+          "from": {"data": "data_workstreams"},
+          "encode": {
+            "update": {
+              "strokeWidth": {"value": 1},
+              "stroke": {"value": "white"},
+              "x": {"value": 0},
+              "x2": {"field": "work_stream_yOffset"},
+              "y": {"scale": "y", "field": "task"}
+            }
           }
         }
       ],
@@ -419,10 +592,10 @@
         {
           "scale": "y",
           "orient": "left",
-          "labelColor": "white",
           "labelFont": "Georgia",
           "labelFontSize": 14,
-          "zindex": 0}
+          "zindex": 0
+        }
       ]
     }
   ]
@@ -430,19 +603,23 @@
   "legends": [
     {
       "type": "symbol",
-      "symbolType": "diamond",
-      "symbolStrokeColor": "white",
-      "labelColor": "white",
-      "fill": "milestone_color",
-      "title": "Milestones"
+      "symbolType": "M-1,-1H1V1H-1Z",
+      "symbolStrokeColor": "black",
+      "labelColor": "black",
+      "fill": "projects_color",
+      "title": "Projects",
+      "titleOrient":"left",
+      "padding":{"value": 7}
     },
     {
       "type": "symbol",
-      "symbolType": "M-1,-1H1V1H-1Z",
-      "symbolStrokeColor": "white",
-      "labelColor": "white",
-      "fill": "projects_color",
-      "title": "Projects"
+      "symbolType": "diamond",
+      "symbolStrokeColor": "black",
+      "labelColor": "black",
+      "fill": "milestone_color",
+      "title": "Milestones",
+      "titleOrient":"left",
+      "padding":{"value": 7}
     }
   ],
   "scales": [
@@ -467,11 +644,11 @@
         "sort": {"op": "min", "field": "sort"}
       },
       "range": {"step": {"signal": "y_step"}},
-      "paddingInner": 0.03,
+      "paddingInner": 0.1,
       "paddingOuter": 0
     },
     {
-      "name": "y_milestone",
+      "name": "y_key_milestones",
       "type": "band",
       "domain": {
         "fields": [
@@ -479,8 +656,8 @@
         ],
         "sort": {"op": "min", "field": "sort"}
       },
-      "range": {"step": {"signal": "y_milestone_step"}},
-      "paddingInner": 0.03,
+      "range": {"step": {"signal": "y_key_milestones_step"}},
+      "paddingInner": 0,
       "paddingOuter": 0
     },
     {
