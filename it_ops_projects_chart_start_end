@@ -1,13 +1,13 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "background": "#215F9A",
+  "background": "#f6f8fc",
   "padding": 5,
   "width": 1000,
   "height": 510,
   "title": {
     "text": "Infrastructure - Programme Plan FY25",
     "anchor":"start",
-    "font": "Georgia",
+    "font": "Roboto",
     "fontSize": 20,
     "offset": 20
   },
@@ -98,7 +98,7 @@
     }
   ],
   "signals": [
-    {"name": "y_step", "value": 32},
+    {"name": "y_step", "value": 35},
     {"name": "y_key_milestones_step", "value": 80},
     {"name": "height_milestones", "update": "bandspace(domain('y_key_milestones').length, 0, 0) * y_key_milestones_step"},
     {"name": "height_projects", "update": "bandspace(domain('y').length, 0, 0) * y_step"},
@@ -114,7 +114,7 @@
       "name": "key_milestones_group",
       "encode": {
         "update": {
-          "fill":{"value": "#D1D1D1"},
+          //"fill":{"value": "#D1D1D1"},
           "opacity": {"value": 1},
           "width": {"signal": "width"},
           "height": {"signal": "height_milestones"}
@@ -130,8 +130,8 @@
           "encode": {
             "update": {
               "align": {"value": "left"},
-              "fill": {"value": "white"},
-              "font": {"value": "Georgia"},
+              //"font": {"value": "Roboto"},
+              "fill": {"value": "black"},
               "fontSize": {"value": 16},
               "description": {
                 "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
@@ -158,8 +158,7 @@
           "encode": {
             "update": {
               "align": {"value": "left"},
-              "fill": {"value": "white"},
-              "font": {"value": "Georgia"},
+              //"font": {"value": "Roboto"},
               "fontSize": {"value": 14},
               "description": {
                 "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
@@ -234,6 +233,7 @@
               "lineBreak": {"value": "\\n"},
               "fill": {"value": "black"},
               "fontSize":{"value": 10},
+              //"font": {"value": "Roboto"},
               "description": {
                 "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
               },
@@ -280,10 +280,13 @@
           "tickCount": "month",
           "gridScale": "y_key_milestones",
           "grid": true,
+          "gridColor": "black",
+          "gridOpacity": 0.3,
           "gridDash": {"value": [5, 5]},
           "domain": false,
           "labels": false,
           "format": "%b",
+          "labelColor": {"value": "black"},
           "labelAlign": "left",
           "aria": false,
           "maxExtent": 0,
@@ -298,8 +301,9 @@
           "format": "%b",
           "labelAlign": "left",
           "labelPadding": 0,
-          "labelFont": "Georgia",
+          "labelFont": "Roboto",
           "labelFontSize": 14,
+          "labelColor": {"value": "black"},
           "tickCount": "month",
           "labelFlush": true,
           "labelOverlap": true,
@@ -308,9 +312,9 @@
         {
           "scale": "y_key_milestones",
           "orient": "left",
-          "labelFont": "Georgia",
+          "labelColor": {"value": "black"},
+          "labelFont": "Roboto",
           "labelFontSize": 14,
-          "labelOffset": -10,
           "zindex": 0}
       ]
     },
@@ -399,11 +403,12 @@
           "encode": {
             "update": {
               "align": {"signal": "datum.textAlign"},
+              //"font": {"value": "Roboto"},
               "lineBreak": {"value": "\\n"},
               "fill": {
                 "signal": "datum.project_status === \"[Project] Red\" ? \"white\" : \"black\""
               },
-              "fontSize":{"value": 8.5},
+              "fontSize":{"value": 9},
               "description": {
                 "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
               },
@@ -446,7 +451,6 @@
           "name": "text_labels_marks",
           "type": "text",
           "zindex": 1,
-          //"style": ["text"],
           "from": {"data": "data_labels"},
           "encode": {
             "update": {
@@ -454,6 +458,7 @@
               "lineBreak": {"value": "\\n"},
               "fill": {"value": "white"},
               "fontSize":{"value": 10},
+              //"font": {"value": "Roboto"},
               "angle": {"field": "textRotate"},
               "description": {
                 "signal": "\"start: \" + (utcFormat(datum[\"start\"], \"%b\")) + \"; task: \" + (isValid(datum[\"task\"]) ? datum[\"task\"] : \"\"+datum[\"task\"]) + \"; text: \" + (isValid(datum[\"text\"]) ? datum[\"text\"] : \"\"+datum[\"text\"])"
@@ -504,8 +509,8 @@
             "update": {
               "align": {"value": "center"},
               "lineBreak": {"value": "\\n"},
-              "fill": {"value": "white"},
-              "font": {"value": "Georgia"},
+              "fill": {"value": "black"},
+              //"font": {"value": "Roboto"},
               "fontSize":{"value": 14},
               "angle": {"value": -90},
               "dy": {"field": "work_stream_yOffset"},
@@ -529,25 +534,6 @@
             }
           }
         },
-        // {
-        //   "name": "rect_workstream_marks",
-        //   "type": "rect",
-        //   "from": {"data": "text_workstream_marks"},
-        //   "zindex": 0,
-        //   "encode": {
-        //     "update": {
-        //       "x": {"field": "bounds.x1", "offset": -2},
-        //       "x2": {"field": "bounds.x2", "offset": 2},
-        //       "y": {"field": "bounds.y1", "offset": -2},
-        //       "y2": {"field": "bounds.y2", "offset": 2},
-        //       "fill": {"value": "grey"},
-        //       "opacity": {"value": 1},
-        //       "cornerRadius": {"value": 2},
-        //       "strokeWidth": {"value": 1},
-        //       "stroke": {"value": "black"}
-        //     }
-        //   }
-        // }
         {
           "name": "rule_workstream_marks",
           "type": "rule",
@@ -555,7 +541,7 @@
           "encode": {
             "update": {
               "strokeWidth": {"value": 1},
-              "stroke": {"value": "white"},
+              "stroke": {"value": "black"},
               "x": {"value": 0},
               "x2": {"field": "work_stream_yOffset"},
               "y": {"scale": "y", "field": "task"}
@@ -570,9 +556,12 @@
           "tickCount": "month",
           "gridScale": "y",
           "grid": true,
+          "gridColor": "black",
+          "gridOpacity": 0.3,
           "gridDash": {"value": [5, 5]},
           "domain": false,
           "labels": false,
+          "labelColor": {"value": "black"},
           "format": "%b",
           "labelAlign": "left",
           "aria": false,
@@ -587,13 +576,15 @@
           "grid": false,
           "format": "%b",
           "labels": false,
+          "ticks": false,
           "zindex": 0
         },
         {
           "scale": "y",
           "orient": "left",
-          "labelFont": "Georgia",
+          "labelFont": "Roboto",
           "labelFontSize": 14,
+          "labelColor": {"value": "black"},
           "zindex": 0
         }
       ]
@@ -609,7 +600,11 @@
       "fill": "projects_color",
       "title": "Projects",
       "titleOrient":"left",
-      "padding":{"value": 7}
+      "titleFont": "Roboto",
+      "padding":{"value": 7},
+      "labelFont": "Roboto",
+      "legendX": 635,
+      "legendY": -80
     },
     {
       "type": "symbol",
@@ -619,7 +614,11 @@
       "fill": "milestone_color",
       "title": "Milestones",
       "titleOrient":"left",
-      "padding":{"value": 7}
+      "titleFont": "Roboto",
+      "padding":{"value": 7},
+      "labelFont": "Roboto",
+      "legendX": 280,
+      "legendY": -80
     }
   ],
   "scales": [
